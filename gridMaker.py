@@ -4,7 +4,8 @@ import geopy
 def gridMaker(center: geopy.point.Point, \
               top_left: geopy.point.Point, \
               bottom_right: geopy.point.Point, \
-              x_step: float, y_step: float) -> list[tuple[float,float]]:    
+              x_step: float, \
+              y_step: float) -> list[tuple[float,float]]:    
     
     """Returns a grid of points where center, top_left, and bottom_right are three of the four vertexes 
     of the parallelogram. step_x and step_y are the distance between the points in the grid.
@@ -13,9 +14,9 @@ def gridMaker(center: geopy.point.Point, \
         center (Point): A vertex of the grid/parallelogram
         top_left (Point): A vertex of the grid/parallelogram
         bottom_right (Point): A vertex of the grid/parallelogram
-        x_step (float): Distance between points in the x axis of the grid/parallelogra. The
+        x_step (float): Distance between points in the x axis of the grid/parallelogram. The
                         x axis is the one defined by the center and the bottom_right points
-        y_step (float): Distance between points in the x axis of the grid/parallelogra. The
+        y_step (float): Distance between points in the x axis of the grid/parallelogram. The
                         x axis is the one defined by the center and the bottom_right points
 
     Returns:

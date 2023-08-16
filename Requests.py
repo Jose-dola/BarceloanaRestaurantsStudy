@@ -6,9 +6,9 @@ import pandas as pd
 rad = 0.1
 
 #The funcion ???? returns a grid of geopy points
-grid = funcion()
+grid = gridMaker()
 
-#TCreating a list to save the places IDs
+#Creating a list to save the places IDs
 list_of_id = []
 
 #API key
@@ -22,10 +22,16 @@ for point in grid:
     lon = str(point[1])
 
     #API request
-    url = f"https://maps.googleapis.com/maps/api/place/nearbysearch/json?location={lat}%2C{lon}&radius={rad}&type=restaurant&key={API_key}"
-    payload={}
-    headers = {}
-    response = requests.request("GET", url, headers=headers, data=payload)
+
+    #No order:
+    #url = f"https://maps.googleapis.com/maps/api/place/nearbysearch/json?location={lat}%2C{lon}&radius={rad}&type=restaurant&key={API_key}"
+    
+    #Ordering in an ascending way by distance
+    #url = f'https://maps.googleapis.com/maps/api/place/nearbysearch/json?location={lat}%2C{lon}&radius={rad}&type=restaurant&rankby=distance&key={API_KEY}'
+
+    # payload={}  data=payload
+    # headers = {}  headers=headers
+    response = requests.request("GET", url)
 
     #Getting the requested data as a dictionary
     dict = response.json()
@@ -39,10 +45,7 @@ for point in grid:
 IDs = list(set(list_of_id))
 
 #Creating a dictionary where we will save the desired information for the several places
-dict_places = {
-    'Name':[],
-    'Postal Code':[]
-}
+list_of_dict = []
 
 #Requesting complete info for each of the places found
 for id in IDs:
@@ -55,8 +58,4 @@ for id in IDs:
     dict = response.json()
 
     #Adding information in the dictionary
-    dict_places['Name'].append(dict['Name'])
-    dict_places['Postal Code'].append(dict['Postal Code'])
-
-#Creating the dara frame
-df = pd.DataFrame(dict_places)
+    list_of_dict.append(dict)
