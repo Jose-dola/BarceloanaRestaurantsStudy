@@ -1,6 +1,8 @@
 import geopy.point
 import geopy.distance
 import numpy as np
+import os
+import pickle
 
 def get_restaurants_in_barcelona(restaurants_dict: list[dict]) -> list[dict]:
     """Filtering restaurants that are located inside the Barcelona 'locality'.
@@ -50,12 +52,86 @@ def get_restaurants_inside_cercle(center: geopy.point.Point,
 
     Args:
         center (geopy.point.Point): Center of the cercle as a geo point (latitude and longitude)
-        radius (float): radius of the cercle in kilometers
-        restaurants_points (list[geopy.point.Point]): list of restaurant geo points (latitudes and longitudes)
-        restaurants (list[dict]): list of restaurant dictionaries
+        radius (float): Radius of the cercle in kilometers
+        restaurants_points (list[geopy.point.Point]): List of restaurant geo points (latitudes and longitudes)
+        restaurants (list[dict]): List of restaurant dictionaries
 
     Returns:
         list[dict]: list of restaurant dictionaries (that are inside the cercle)
     """
     selected_points = np.array([geopy.distance.geodesic(center,geo_p).kilometers < radius for geo_p in restaurant_points])
     return np.array(restaurants)[selected_points].tolist()
+
+def get_restaurants_selection_inside_cercle(center: geopy.point.Point,
+                                            radius: float, 
+                                            restaurant_points: np.ndarray[geopy.point.Point]) -> np.ndarray[bool]:
+    
+    """This function returns the selection (numpy array of boolean values, True if the restaurant is selected and False if it is not) 
+    of the restaurants that are inside a cercle
+
+    Args:
+        center (geopy.point.Point): Center of the cercle as a geo point (latitude and longitude)
+        radius (float): Radius of the cercle in kilometers
+        restaurants_points (np.ndarray[geopy.point.Point]): numpy array of restaurant geo points (latitudes and longitudes)
+
+    Returns:
+        np.ndarray[bool]: The selection (numpy array of boolean values, True if the restaurant is selected and False if it is not)
+    """    
+
+    return np.vectorize(lambda x: geopy.distance.geodesic(center,x).kilometers < radius)(restaurant_points)
+
+def get_selections_from_pkl_files(folder: str) -> tuple[list[np.ndarray[bool]], list[geopy.point.Point]]:
+
+    """This function extract the selections (boolean numpy arrays) stored in the .pkl files that are inside a folder.
+
+    Args:
+        folder (str): Name of the folder.
+
+    Returns:
+        tuple[list[np.ndarray[bool]], list[geopy.point.Point]]: 
+                List of selections (each selection is a boolean numpy array) and
+                list of geo points (latitudes and longitudes). 
+                Each selection is around one of these points. The indexing coincides
+    """  
+
+    # Get all files in the folder
+    files = [f for f in os.listdir(folder) if os.path.isfile(os.path.join(folder, f))]
+    
+    # Get restaurant dictionaries from files
+    list_of_selections = []
+    list_of_geo_points = []
+    for f in files:
+        lat_and_lon = os.path.splitext(f)[0].split('-')
+        list_of_geo_points.append(geopy.point.Point(lat_and_lon))
+        f_path = os.path.join(folder,f)
+        with open(f_path, 'rb') as file:
+            selection = pickle.load(file)
+            list_of_selections.append(selection)
+    
+    return list_of_selections, list_of_geo_points
+
+def geo_group_by(restaurants: np.ndarray[dict], selections: list[np.ndarray[bool]], get_function: callable, group_by_function: callable) -> list:
+    """This function group by points in a grid. The list of all restaurants and the selections (boolean lists) for each point is given by the user. 
+    The function to extract the quantity of interest from the restaurant dictionary is also given by the user. 
+    The function to apply after the groupby (mean, count, etc.) is also given by the user.
+
+    Args:
+        restaurants (np.ndarray[dict]): Numpy array of restaurant dictionaries
+        selections (list[np.ndarray[bool]]): List of selections (boolean numpy arrays)
+        get_function (callable): Function to extract the quantity of interest from the restaurant dictionary.
+        group_by_function (callable): The function to apply after the groupby (mean, count, etc.)
+
+    Returns:
+        list: Result of the groupby
+    """    
+    vectorized_get_function = np.vectorize(get_function)
+    results = []
+    for selection in selections:
+        print(group_by_function(vectorized_get_function(restaurants[selection])))
+        results.append(group_by_function(vectorized_get_function(restaurants[selection])))
+    #vectorized_groupby_function = np.vectorize(lambda selection: group_by_function(vectorized_get_function(restaurants[selection])))
+    #return vectorized_groupby_function(selections)
+    return results
+
+    
+

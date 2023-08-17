@@ -290,7 +290,7 @@ def pkl_files_to_list_of_dicts(folder: str):
     for f in files:
         f_path = os.path.join(folder,f)
         with open(f_path, 'rb') as file:
-                dictionary = pickle.load(file)
-                list_of_dicts.append(dictionary)
+            dictionary = pickle.load(file)
+            list_of_dicts.append(dictionary)
     
     return list_of_dicts
