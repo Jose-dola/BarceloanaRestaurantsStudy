@@ -1,8 +1,6 @@
 import geopy.point
 import geopy.distance
-import json
 import requests
-import pandas as pd
 import pickle
 import os
 
@@ -275,15 +273,24 @@ def data_from_ids_to_files(ids: list[str], \
 
 def pkl_files_to_list_of_dicts(folder: str):
     
+    """This function extract the dictionaries stored in the .pkl files that are inside a folder. 
+
+    Args:
+        folder (str): Name of the folder.
+
+    Returns:
+        list[dict]: List of dictionaries
+    """  
+
     # Get all files in the folder
     files = [f for f in os.listdir(folder) if os.path.isfile(os.path.join(folder, f))]
     
     # Get restaurant dictionaries from files
-    list_of_rest_dicts = []
+    list_of_dicts = []
     for f in files:
         f_path = os.path.join(folder,f)
         with open(f_path, 'rb') as file:
                 dictionary = pickle.load(file)
-                list_of_rest_dicts.append(dictionary)
+                list_of_dicts.append(dictionary)
     
-    return list_of_rest_dicts
+    return list_of_dicts
