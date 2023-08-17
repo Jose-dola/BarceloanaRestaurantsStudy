@@ -2,6 +2,28 @@ import geopy.point
 import geopy.distance
 import numpy as np
 
+def get_restaurants_in_barcelona(restaurants_dict: list[dict]) -> list[dict]:
+    """Filtering restaurants that are located inside the Barcelona 'locality'.
+
+    Args:
+        restaurants_dict (list[dict]): list of restaurants (as dictionaries)
+
+    Returns:
+        list[dict]: List of resturants (as dictionaries) in the Barcelona 'locality'.
+    """
+    #Dictionary to return
+    barcelona_restaurants = []
+
+    for restaurant in restaurants_dict:
+        #For each restaurant, we check the 'address_components1 info
+        for i in range(len(restaurant['address_components'])):
+            #We identify the position in the list of the level type "locality"
+            level_type = restaurant['address_components'][i]['types'][0]
+            if level_type == 'locality':
+                #Once the level type locality is found, we check if the restaurant is located in Barcelona
+                if restaurant['address_components'][i]['long_name']=='Barcelona':
+                    barcelona_restaurants.append(restaurant) 
+
 def restaurants_geo_points(restaurants: list[dict]) -> list[geopy.point.Point]:
     """This function create a list of geo points (latitudes and longitudes) from a list of restaurant dictionaries.
     The same index in the two lists corresponds to the same restaurant
