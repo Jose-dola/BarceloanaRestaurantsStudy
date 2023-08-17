@@ -23,6 +23,7 @@ def get_restaurants_in_barcelona(restaurants_dict: list[dict]) -> list[dict]:
                 #Once the level type locality is found, we check if the restaurant is located in Barcelona
                 if restaurant['address_components'][i]['long_name']=='Barcelona':
                     barcelona_restaurants.append(restaurant) 
+    return barcelona_restaurants
 
 def restaurants_geo_points(restaurants: list[dict]) -> list[geopy.point.Point]:
     """This function create a list of geo points (latitudes and longitudes) from a list of restaurant dictionaries.
