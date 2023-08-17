@@ -255,7 +255,7 @@ def data_from_ids_to_files(ids: list[str], \
     #Requesting complete info for each of place id
     for id in ids:
         url = f"https://maps.googleapis.com/maps/api/place/details/json?place_id={id}&key={API_key}"
-        payload={}
+        payload = {}
         headers = {}
         response = requests.request("GET", url, headers=headers, data=payload)
         try:
@@ -271,3 +271,8 @@ def data_from_ids_to_files(ids: list[str], \
         with open(folder+'/'+id+'.pkl', 'wb') as file:
             pickle.dump(dict, file)
     return error_ids
+
+def pkl_files_to_list_of_dicts(folder: str):
+    
+    # Get all files in the folder
+    files = [f for f in os.listdir(folder) if os.path.isfile(os.path.join(folder, f))]
