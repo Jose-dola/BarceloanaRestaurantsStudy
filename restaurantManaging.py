@@ -283,6 +283,33 @@ def get_postal_code_in_barcelona(restaurants_dict: list[dict]) -> list[str]:
             postal_codes.append(math.nan)
     return postal_codes
 
+def filter_by_postalcode(pcodes: list[str], pcodes_filter: list[str]) -> list[bool]:
+    """This function returns a selection (boolean list) according to a list of postal codes and 
+    a list of postal codes that works as a filter. The selection value is True if the postal code is in the 
+    postal codes filter list and False if it is not. 
+
+    Args:
+        pcodes (list[str]): List of strings of the postal codes to filter
+        pcodes_filter (list[str]): List of strings of postal codes used as a filter
+
+    Returns:
+        list[bool]: selection (list of boolean values)
+    """    
+    
+    # Convert strings to float for comparison (float allows nan values)
+    pcodes_filter = [float(pc) for pc in pcodes_filter]
+    pcodes = [float(pc) for pc in pcodes]
+    
+    # Creating the selection
+    selection = []
+    for p in pcodes:
+        if p in pcodes_filter:
+            selection.append(True)
+        else:
+            selection.append(False)
+    
+    return selection
+
 def get_simple_category(restaurants_dict: list[dict],
                         category: str) -> list[str]:
     """This funcion gets two arguments.
