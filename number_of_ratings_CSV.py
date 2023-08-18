@@ -3,13 +3,23 @@ import restaurantManaging as rman
 import pandas as pd
 import numpy as np
 
-# Function to count restaurants
-def count_one(restaurant):
-        return 1
+# Function to get the number of ratings from a restaurant
+def get_number_of_ratings(restaurant):
+    if 'user_ratings_total' in restaurant.keys():
+        return restaurant['user_ratings_total']
+    else: 
+        return -1
 
-# count function for using after groupying by geo point
-def count_restaurants(restaurants):
-    return(len(restaurants))
+# Mean function for using after groupying by geo point
+def number_of_ratings_average(nratings):
+    n = 0
+    sum = 0
+    for m in nratings:
+        if m >= 0:
+            n += 1
+            sum += m
+    if n <= 0: return 0
+    else: return sum/n
 
 # Getting restaurant dictionaries from stored .pkl files
 restaurants = gmd.pkl_files_to_list_of_dicts("ids_full_info")
@@ -29,9 +39,9 @@ postal_code_selection = rman.filter_by_postalcode(pcodes, pcodes_filter)
 geo_points = list(np.array(geo_points)[postal_code_selection])
 selections = list(np.array(selections)[postal_code_selection])
 
-# Computing the average rating around each geo point (250m aprox) 
-# and generating a CSV file
-headers = ["latitude","longitude","number_of_restaurants_around(250m)_this_point"]
-values = rman.grid_group_by(restaurants, selections, count_one, count_restaurants)
-file_name = "number_of_grid.csv"
+# Computing the average of number of ratings of each restaurant 
+# around each geo point (250m aprox) and generating a CSV file
+headers = ["latitude","longitude","average_number_of_ratings_of_each_restaurant_around(250m)_this_point"]
+values = rman.grid_group_by(restaurants, selections, get_number_of_ratings, number_of_ratings_average)
+file_name = "average_number_of_ratings_grid.csv"
 rman.geopoints_values_to_csv(geo_points,values,headers=headers,file_name=file_name)
