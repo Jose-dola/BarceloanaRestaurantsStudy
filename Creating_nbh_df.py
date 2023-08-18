@@ -59,5 +59,21 @@ df = df.dropna(subset=['Postal Code'])
 #Getting neighbourhood and district data
 df = rman.get_nbh_distr_from_pc(df)
 
+#Converting boolean columns into 0 and 1.
+boolean_columns = [
+    'delivery',
+    'dine_in',
+    'reservable',
+    'serves_beer',
+    'serves_brunch',
+    'serves_dinner',
+    'serves_lunch',
+    'serves_vegetarian_food',
+    'serves_wine',
+    'takeout',
+]
+for column in boolean_columns:
+    df[column] = df[column].astype(float).fillna(0).astype(int)
+
 #Creating a CSV file
 df.to_csv('nbhoods.csv', index=False)
