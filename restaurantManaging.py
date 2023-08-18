@@ -110,13 +110,14 @@ def get_selections_from_pkl_files(folder: str) -> tuple[list[np.ndarray[bool]], 
     
     return list_of_selections, list_of_geo_points
 
-def grid_group_by(restaurants: np.ndarray[dict], selections: list[np.ndarray[bool]], get_function: callable, group_by_function: callable) -> list:
+def grid_group_by(restaurants: list[dict], selections: list[np.ndarray[bool]], get_function: callable, group_by_function: callable) -> list:
+ 
     """This function group by points in a grid. The list of all restaurants and the selections (boolean lists) for each point is given by the user. 
     The function to extract the quantity of interest from the restaurant dictionary is also given by the user. 
     The function to apply after the groupby (mean, count, etc.) is also given by the user.
 
     Args:
-        restaurants (np.ndarray[dict]): Numpy array of restaurant dictionaries
+        restaurants (list[dict]): List of restaurant dictionaries
         selections (list[np.ndarray[bool]]): List of selections (boolean numpy arrays)
         get_function (callable): Function to extract the quantity of interest from the restaurant dictionary.
         group_by_function (callable): The function to apply after the groupby (mean, count, etc.)
@@ -124,14 +125,31 @@ def grid_group_by(restaurants: np.ndarray[dict], selections: list[np.ndarray[boo
     Returns:
         list: Result of the groupby
     """    
+
+    # Creating numpy array from restaurants list
+    restaurants_array = np.array(restaurants)
+    # Function to apply get_function to all elements in a numpy array
     vectorized_get_function = np.vectorize(get_function)
+    # Applying the gruopby and storing the results in the results list
     results = []
     for selection in selections:
-        print(group_by_function(vectorized_get_function(restaurants[selection])))
-        results.append(group_by_function(vectorized_get_function(restaurants[selection])))
-    #vectorized_groupby_function = np.vectorize(lambda selection: group_by_function(vectorized_get_function(restaurants[selection])))
-    #return vectorized_groupby_function(selections)
+        restaurants_selection = restaurants_array[selection]
+        n = len(restaurants_selection)
+        if n > 0: group_results = vectorized_get_function(restaurants_selection)
+        else: group_results = np.array([])
+        results.append(group_by_function(group_results))
+
     return results
+
+def geopoints_values_to_csv(geo_points: geopy.point.Point, values: list, headers: list[str], file_name: str):
+
+    headers = ["latitude","longitude","values"]
+    
+    df = pd.DataFrame(columns=headers)
+    df['latitude'] = [p.latitude for p in geo_points]
+    df['longitude'] = [p.longitude for p in geo_points]
+    df['values'] = rman.grid_group_by(restaurants, selections, get_wheelchair, count_true)
+    df.to_csv("wheelchair_count_grid.csv",index=False)
 
     
 
