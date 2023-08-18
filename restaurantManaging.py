@@ -6,6 +6,92 @@ import pickle
 import math
 import pandas as pd
 
+# Global variables
+neighbourhoods = {
+    '08001' : 'El Raval',
+    '08002' : 'Barri Gotic',
+    '08003' : 'Barceloneta',
+    '08004' : 'Poble Sec',
+    '08005' : 'Poblenou',
+    '08006' : 'El Farro',
+    '08007' : 'Antiga Esquerra Eixample',
+    '08008' : 'Antiga Esquerra Eixample',
+    '08009' : 'Dreta Eixample',
+    '08010' : 'Dreta Eixample',
+    '08011' : 'Esquerra Eixample',
+    '08012' : 'Vila de Gracia',
+    '08013' : 'El Fort Pienc',
+    '08014' : 'La Bordeta - Les Corts',
+    '08015' : 'Nova Esquerra Exiample - Sant Antoni',
+    '08016' : 'Porta-La Prosperitat',
+    '08017' : 'Vallvidrera',
+    '08018' : 'El Clot',
+    '08019' : 'El Besos - Sant Marti',
+    '08020' : 'La Verneda - Sant Marti de Provençals',
+    '08021' : 'Les Corts - Sarria',
+    '08022' : 'Sarria - La Bonanova',
+    '08023' : 'El Coll',
+    '08024' : 'Gracia - Can Baro',
+    '08025' : "Camps d'en Grassot i Gracia Nova",
+    '08026' : "Camp de l'arpa",
+    '08027' : "El Congres - Navas",
+    '08028' : "Les Corts",
+    '08029' : "Sarria",
+    '08030' : "San Andres Palomar",
+    '08031' : "Horta",
+    '08032' : "La Font d'en Fargues",
+    '08033' : "Trinitat - Torre Baro",
+    '08034' : "Pedralbes",
+    '08035' : "Sant Genis dels Agudells",
+    '08036' : "Esquerra Eixample",
+    '08037' : "Dreta Eixample",
+    '08038' : "Montjuic",
+    '08039' : "Port de Barcelona",
+    '08040' : "Zona Franca",
+    '08041' : "El Guinardo",
+    '08042' : "Canyelles - Roquetes"
+}
+districts = {
+    'El Raval' : 'Ciutat Vella',
+    'Barri Gotic' : 'Ciutat Vella',
+    'Barceloneta' : 'Ciutat Vella',
+    'Poble Sec' : 'Sants - Montjuic',
+    'Poblenou' : 'Sant Marti',
+    'El Farro' : 'Sarria - Sant Gervasi',
+    'Antiga Esquerra Eixample' : 'Eixample',
+    'Dreta Eixample' : 'Eixample',
+    'Esquerra Eixample' : 'Eixample',
+    'Vila de Gracia' : 'Gracia',
+    'El Fort Pienc' : 'Eixample',
+    'La Bordeta - Les Corts' : 'Sants - Montjuic',
+    'Nova Esquerra Exiample - Sant Antoni' : 'Eixample',
+    'Porta-La Prosperitat' : 'Nou Barris',
+    'Vallvidrera' : 'Sarria - Sant Gervasi',
+    'El Clot' : 'Sant Marti',
+    'El Besos - Sant Marti' : 'Sant Marti',
+    'La Verneda - Sant Marti de Provençals' : 'Sant Marti',
+    'Les Corts - Sarria' : 'Les Corts',
+    'Sarria - La Bonanova' : 'Les Corts',
+    'El Coll' : 'Gracia',
+    'Gracia - Can Baro' : 'Gracia',
+    "Camps d'en Grassot i Gracia Nova" : 'Gracia',
+    "Camp de l'arpa" : 'Sant Marti',
+    "El Congres - Navas" : 'Sant Andreu',
+    "Les Corts" : 'Les Corts',
+    "Sarria" : 'Sarria - Sant Gervasi',
+    "San Andres Palomar" : 'Sant Andreu',
+    "Horta" : 'Horta - Guinardo',
+    "La Font d'en Fargues" : 'Horta - Guinardo',
+    "Trinitat - Torre Baro" : 'Nou Barris',
+    "Pedralbes" : 'Les Corts',
+    "Sant Genis dels Agudells" : 'Horta - Guinardo',
+    "Montjuic" : 'Sants - Montjuic',
+    "Port de Barcelona" : 'Sants - Montjuic',
+    "Zona Franca" : "Sants - Montjuic",
+    "El Guinardo" : 'Horta - Guinardo',
+    "Canyelles - Roquetes" : 'Nou Barris'
+}
+
 def get_restaurants_in_barcelona(restaurants_dict: list[dict]) -> list[dict]:
     """Filtering restaurants that are located inside the Barcelona 'locality'.
 
@@ -143,15 +229,29 @@ def grid_group_by(restaurants: list[dict], selections: list[np.ndarray[bool]], g
 
     return results
 
-def geopoints_values_to_csv(geo_points: geopy.point.Point, values: list, headers: list[str], file_name: str):
+def geopoints_values_to_csv(geo_points: list[geopy.point.Point], 
+                            values: list, 
+                            headers: list[str] = ["latitude","longitude","value"], 
+                            file_name: str = ["geo_table.csv"]):
+    """This function creates a CSV file with 3 columns. The first and de second columns are the latitudes and longitudes 
+    according to a given list of geo points (latitudes and longitudes). The third column is the corresponding value for each 
+    latitude and longitude.
 
-    headers = ["latitude","longitude","values"]
-    
+    Args:
+        geo_points (list[geopy.point.Point]): List of geo points (latitudes and longitudes).
+        values (list): Values associated to each geo point (latitude and longitude).
+        headers (list[str]): Headers for the CSV file. Defaults to ["latitude","longitude","value"]. 
+        file_name (str): Name of the CSV file. Defaults to ["geo_table.csv"].
+    """    
+
+    # Initializing pandas data frame
     df = pd.DataFrame(columns=headers)
+    # Setting columns
     df['latitude'] = [p.latitude for p in geo_points]
     df['longitude'] = [p.longitude for p in geo_points]
-    df['values'] = rman.grid_group_by(restaurants, selections, get_wheelchair, count_true)
-    df.to_csv("wheelchair_count_grid.csv",index=False)
+    df['values'] = values
+    # Creating csv from the pandas dataframe
+    df.to_csv(file_name,index=False)
 
 def get_postal_code_in_barcelona(restaurants_dict: list[dict]) -> list[str]:
     """Given a list of restaurants (as dictionaries) this function returns the postal code,
@@ -229,91 +329,10 @@ def get_nbh_distr_from_pc(df:pd.DataFrame) -> pd.DataFrame:
 
     Returns:
         DataFrame: Original data frame with two additional columns: "Neighbourhood" and "District"
-    """    
-    neighbourhoods = {
-        '08001' : 'El Raval',
-        '08002' : 'Barri Gotic',
-        '08003' : 'Barceloneta',
-        '08004' : 'Poble Sec',
-        '08005' : 'Poblenou',
-        '08006' : 'El Farro',
-        '08007' : 'Antiga Esquerra Eixample',
-        '08008' : 'Antiga Esquerra Eixample',
-        '08009' : 'Dreta Eixample',
-        '08010' : 'Dreta Eixample',
-        '08011' : 'Esquerra Eixample',
-        '08012' : 'Vila de Gracia',
-        '08013' : 'El Fort Pienc',
-        '08014' : 'La Bordeta - Les Corts',
-        '08015' : 'Nova Esquerra Exiample - Sant Antoni',
-        '08016' : 'Porta-La Prosperitat',
-        '08017' : 'Vallvidrera',
-        '08018' : 'El Clot',
-        '08019' : 'El Besos - Sant Marti',
-        '08020' : 'La Verneda - Sant Marti de Provençals',
-        '08021' : 'Les Corts - Sarria',
-        '08022' : 'Sarria - La Bonanova',
-        '08023' : 'El Coll',
-        '08024' : 'Gracia - Can Baro',
-        '08025' : "Camps d'en Grassot i Gracia Nova",
-        '08026' : "Camp de l'arpa",
-        '08027' : "El Congres - Navas",
-        '08028' : "Les Corts",
-        '08029' : "Sarria",
-        '08030' : "San Andres Palomar",
-        '08031' : "Horta",
-        '08032' : "La Font d'en Fargues",
-        '08033' : "Trinitat - Torre Baro",
-        '08034' : "Pedralbes",
-        '08035' : "Sant Genis dels Agudells",
-        '08036' : "Esquerra Eixample",
-        '08037' : "Dreta Eixample",
-        '08038' : "Montjuic",
-        '08039' : "Port de Barcelona",
-        '08040' : "Zona Franca",
-        '08041' : "El Guinardo",
-        '08042' : "Canyelles - Roquetes"
-    }
-    districts = {
-        'El Raval' : 'Ciutat Vella',
-        'Barri Gotic' : 'Ciutat Vella',
-        'Barceloneta' : 'Ciutat Vella',
-        'Poble Sec' : 'Sants - Montjuic',
-        'Poblenou' : 'Sant Marti',
-        'El Farro' : 'Sarria - Sant Gervasi',
-        'Antiga Esquerra Eixample' : 'Eixample',
-        'Dreta Eixample' : 'Eixample',
-        'Esquerra Eixample' : 'Eixample',
-        'Vila de Gracia' : 'Gracia',
-        'El Fort Pienc' : 'Eixample',
-        'La Bordeta - Les Corts' : 'Sants - Montjuic',
-        'Nova Esquerra Exiample - Sant Antoni' : 'Eixample',
-        'Porta-La Prosperitat' : 'Nou Barris',
-        'Vallvidrera' : 'Sarria - Sant Gervasi',
-        'El Clot' : 'Sant Marti',
-        'El Besos - Sant Marti' : 'Sant Marti',
-        'La Verneda - Sant Marti de Provençals' : 'Sant Marti',
-        'Les Corts - Sarria' : 'Les Corts',
-        'Sarria - La Bonanova' : 'Les Corts',
-        'El Coll' : 'Gracia',
-        'Gracia - Can Baro' : 'Gracia',
-        "Camps d'en Grassot i Gracia Nova" : 'Gracia',
-        "Camp de l'arpa" : 'Sant Marti',
-        "El Congres - Navas" : 'Sant Andreu',
-        "Les Corts" : 'Les Corts',
-        "Sarria" : 'Sarria - Sant Gervasi',
-        "San Andres Palomar" : 'Sant Andreu',
-        "Horta" : 'Horta - Guinardo',
-        "La Font d'en Fargues" : 'Horta - Guinardo',
-        "Trinitat - Torre Baro" : 'Nou Barris',
-        "Pedralbes" : 'Les Corts',
-        "Sant Genis dels Agudells" : 'Horta - Guinardo',
-        "Montjuic" : 'Sants - Montjuic',
-        "Port de Barcelona" : 'Sants - Montjuic',
-        "Zona Franca" : "Sants - Montjuic",
-        "El Guinardo" : 'Horta - Guinardo',
-        "Canyelles - Roquetes" : 'Nou Barris'
-    }
+    """   
+
+    global neighbourhoods
+    global districts
 
     nbh_list = []
     dis_ist = []
