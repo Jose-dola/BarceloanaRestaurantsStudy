@@ -3,17 +3,23 @@ import restaurantManaging as rman
 import pandas as pd
 import numpy as np
 
-# Function to get if a restaurant is wheelchair friendly or not
-def get_wheelchair(restaurant):
-    if 'wheelchair_accessible_entrance' in restaurant:
-        #return restaurant['wheelchair_accessible_entrance']
-        if str(restaurant['wheelchair_accessible_entrance']) == 'True':
-            return True
-    return False
+# Function to get the rating from a restaurant
+def get_rating(restaurant):
+    if 'rating' in restaurant.keys():
+        return float(restaurant['rating'])
+    else:
+        return -1
 
-# Function to count how many trues are in a boolean list
-def count_true(list):
-    return len([b for b in list if b == True])
+# Mean function for using after groupying by geo point
+def ratings_average(ratings):
+    n = 0
+    sum = 0
+    for rating in ratings:
+        if rating >= 0:
+            n += 1
+            sum += rating
+    if n <= 0: return 0
+    else: return sum/n
 
 # Getting restaurant dictionaries from stored .pkl files
 restaurants = gmd.pkl_files_to_list_of_dicts("ids_full_info")
@@ -33,9 +39,9 @@ postal_code_selection = rman.filter_by_postalcode(pcodes, pcodes_filter)
 geo_points = list(np.array(geo_points)[postal_code_selection])
 selections = list(np.array(selections)[postal_code_selection])
 
-# Counting the number of restaurants wheelchair friendly around each geo point (250m aprox) 
+# Computing the average rating around each geo point (250m aprox) 
 # and generating a CSV file
-headers = ["latitude","longitude","number_of_wheelchair_friendly_restaurants_around(250m)_this_point"]
-values = rman.grid_group_by(restaurants, selections, get_wheelchair, count_true)
-file_name = "wheelchair_count_grid.csv"
+headers = ["latitude","longitude","average_rating_around(250m)_this_point"]
+values = rman.grid_group_by(restaurants, selections, get_rating, ratings_average)
+file_name = "average_rating_grid.csv"
 rman.geopoints_values_to_csv(geo_points,values,headers=headers,file_name=file_name)
