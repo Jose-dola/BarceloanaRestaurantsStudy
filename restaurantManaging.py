@@ -1,5 +1,6 @@
 import geopy.point
 import geopy.distance
+import geopy.geocoders
 import numpy as np
 import os
 import pickle
@@ -247,9 +248,9 @@ def geopoints_values_to_csv(geo_points: list[geopy.point.Point],
     # Initializing pandas data frame
     df = pd.DataFrame(columns=headers)
     # Setting columns
-    df['latitude'] = [p.latitude for p in geo_points]
-    df['longitude'] = [p.longitude for p in geo_points]
-    df['values'] = values
+    df[headers[0]] = [p.latitude for p in geo_points]
+    df[headers[1]] = [p.longitude for p in geo_points]
+    df[headers[2]] = values
     # Creating csv from the pandas dataframe
     df.to_csv(file_name,index=False)
 
@@ -353,4 +354,28 @@ def get_nbh_distr_from_pc(df:pd.DataFrame) -> pd.DataFrame:
 
     return df
     
+def get_barcelona_postalcodes() -> list[str]:
+    """This function returns a list of all postal codes in Barcelona
 
+    Returns:
+        list[str]: All postal codes in Barcelona
+    """    
+    global neighbourhoods
+    return list(neighbourhoods.keys())
+
+def get_postalcode_from_geopoint(geo_point: geopy.point.Point) -> str:
+
+    # Create a geocoder instance
+    geolocator = geopy.geocoders.Nominatim(user_agent="my_geocoder")
+    
+    # Define the latitude and longitude coordinates
+    latitude = geo_point.latitude
+    longitude = geo_point.longitude
+    
+    # Geocode the coordinates
+    location = geolocator.reverse((latitude, longitude))
+    
+    # Extract the postal code from the location address
+    postal_code = location.raw['address']['postcode']
+    
+    return postal_code

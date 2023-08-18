@@ -1,4 +1,4 @@
-latitude,longitude,values
+latitude,longitude,number_of_wheelchair_friendly_restaurants_around(250m)_this_point
 41.44865448275862,2.174116551724138,3
 41.38891627586207,2.196483172413793,28
 41.429232,2.240672,0
