@@ -110,7 +110,7 @@ def get_selections_from_pkl_files(folder: str) -> tuple[list[np.ndarray[bool]], 
     
     return list_of_selections, list_of_geo_points
 
-def geo_group_by(restaurants: np.ndarray[dict], selections: list[np.ndarray[bool]], get_function: callable, group_by_function: callable) -> list:
+def grid_group_by(restaurants: np.ndarray[dict], selections: list[np.ndarray[bool]], get_function: callable, group_by_function: callable) -> list:
     """This function group by points in a grid. The list of all restaurants and the selections (boolean lists) for each point is given by the user. 
     The function to extract the quantity of interest from the restaurant dictionary is also given by the user. 
     The function to apply after the groupby (mean, count, etc.) is also given by the user.
