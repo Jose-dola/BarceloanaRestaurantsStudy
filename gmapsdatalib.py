@@ -16,19 +16,20 @@ def request_check(response: requests.models.Response):
     if status != 'OK' and status != 'ZERO_RESULTS':
         raise RequestError("Google API returned the following status: "+status) 
 
-def gridMaker(center: geopy.point.Point, \
-              top_left: geopy.point.Point, \
-              bottom_right: geopy.point.Point, \
+def gridMaker(center_lat_lon: tuple[float,float], \
+              top_left_lat_lon: tuple[float,float], \
+              bottom_right_lat_lon: tuple[float,float], \
               x_step: float, \
               y_step: float) -> list[tuple[float,float]]:    
     
     """Returns a grid of points where center, top_left, and bottom_right are three of the four vertexes 
-    of the parallelogram. step_x and step_y are the distance between the points in the grid.
+    of the parallelogram (each point is specified with its latitude and its longitude as a tuple). 
+    step_x and step_y are the distance between the points in the grid.
     
     Args:
-        center (Point): A vertex of the grid/parallelogram
-        top_left (Point): A vertex of the grid/parallelogram
-        bottom_right (Point): A vertex of the grid/parallelogram
+        center (tuple of two float): A vertex of the grid/parallelogram (the bottom left one)
+        top_left (tuple of two float): A vertex of the grid/parallelogram (the top left one)
+        bottom_right (tuple of two float): A vertex of the grid/parallelogram (the bottom right one)
         x_step (float): Distance between points in the x axis of the grid/parallelogram (in meters). 
                         The x axis is the one defined by the center and the bottom_right points
         y_step (float): Distance between points in the y axis of the grid/parallelogram (in meters). 
@@ -38,6 +39,12 @@ def gridMaker(center: geopy.point.Point, \
         list[tuple[float,float]]: The grid. List of tuples. Each tuple are the latitude and
                                   the longitude of a point in the grid
     """    
+
+    # Creating the geopy points
+    center = geopy.point.Point(center_lat_lon[0],center_lat_lon[1])
+    top_left = geopy.point.Point(top_left_lat_lon[0],top_left_lat_lon[1])
+    bottom_right = geopy.point.Point(bottom_right_lat_lon[0],bottom_right_lat_lon[1])
+
     # Steps in kilometers
     x_step = x_step / 1000
     y_step = y_step / 1000
@@ -79,11 +86,14 @@ def get_ids_from_grid(grid: list[tuple[float,float]], \
     """Given a grid with coordinates (tuples of floats with latitude and longitude data) this function performs
     an API request to Google Maps in order to obtain the 20 closer points of interest (specified by the
     place_type argument) to each of the locations of the grid. It returns a list with the places id's used
-    by Google Maps.
+    by Google Maps. This function does not handle errors during the google API requests. Use ids_to_file_from_grid()
+    function if you want the errors during the google API requests being handled.
     
     Args:
         grid (list of float tuples): List with coordinates (latitude, longitude)
         place_type (str): Type of places of interest (for instance 'restaurant' or 'hospital')
+                          See full list of available place types in this link (link working on August 2023):
+                          https://developers.google.com/maps/documentation/places/web-service/supported_types#table2
         API_key (str): API key used to perform Nearby Search API requests.
         payload (dict): Payload used to perform Nearby Search API requests. It is an empty dictionary by default.
         headers (dict): Headers used to perform Nearby Search API requests. It is an empty dictionary by default.
@@ -122,19 +132,26 @@ def ids_to_file_from_grid(grid: list[tuple[float,float]], \
                       file_name: str, \
                       API_key: str, \
                       payload: dict = {}, \
-                      headers: dict = {}) -> list[str]:
+                      headers: dict = {}) -> list[tuple[float,float]]:
 
     """Given a grid with coordinates (tuples of floats with latitude and longitude data) this function performs
     an API request to Google Maps in order to obtain the 20 closer points of interest (specified by the
-    place_type argument) to each of the locations of the grid. It saves this ids in a file.
+    place_type argument) to each of the locations of the grid. It saves these ids in a file. It returns the ids
+    where there were problems making the google API request.
     
     Args:
         grid (list of float tuples): List with coordinates (latitude, longitude)
         place_type (str): Type of places of interest (for instance 'restaurant' or 'hospital')
+                          See full list of available place types in this link (link working on August 2023):
+                          https://developers.google.com/maps/documentation/places/web-service/supported_types#table2
         file_name (str): Path of the file were the ids will be stored.
         API_key (str): API key used to perform Nearby Search API requests.
         payload (dict): Payload used to perform Nearby Search API requests. It is an empty dictionary by default.
         headers (dict): Headers used to perform Nearby Search API requests. It is an empty dictionary by default.
+    
+    Returns:
+        list of float tuples: List of coordinates (latitude and longitude) of the points of the grid where there were
+        problems making the google API request.
     """  
 
     # Open the file in write mode and truncate it
@@ -142,6 +159,7 @@ def ids_to_file_from_grid(grid: list[tuple[float,float]], \
         file.truncate()
 
     #Performing request and keeping data for any location in the grid
+    error_points = []
     for i, point in enumerate(grid):
 
         #Specifying latitude and longitude
@@ -151,7 +169,11 @@ def ids_to_file_from_grid(grid: list[tuple[float,float]], \
         #API request
         url = f'https://maps.googleapis.com/maps/api/place/nearbysearch/json?location={lat}%2C{lon}&type={place_type}&rankby=distance&key={API_key}'
         response = requests.request("GET", url, headers=headers, data=payload)
-        request_check(response)
+        try:
+            request_check(response)
+        except:
+            error_points.append((point[0],point[1]))
+            continue
 
         #Getting the requested data as a dictionary
         dict = response.json()
@@ -162,6 +184,8 @@ def ids_to_file_from_grid(grid: list[tuple[float,float]], \
             for place in places:
                 # Save id in the file
                 file.write(str(i)+" "+place["place_id"]+"\n")
+        
+        return error_points
 
 def get_unique_ids_from_files(files: list[str]) -> list[str]:
 
