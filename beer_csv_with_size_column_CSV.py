@@ -1,8 +1,8 @@
 import pandas as pd
 
 def f_size(ratio):
-    if float(ratio) == 0: return float(ratio)
-    else: return (float(ratio) - 0.4)*100
+    if float(ratio) < 0.9: return float(ratio)
+    else: return (float(ratio) - 0.9)*1000
 
 # Open the file in read mode
 file = open("ratio_serve_beer.csv", "r")
