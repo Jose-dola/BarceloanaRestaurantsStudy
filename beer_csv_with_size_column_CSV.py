@@ -13,7 +13,7 @@ lines = file.readlines()
 # Close the file
 file.close()
 
-# Making the data
+# Making the data frame
 headers_line = lines[0]
 headers_line = headers_line.replace("\n","")
 headers = headers_line.split(',')
@@ -36,4 +36,5 @@ df[headers[1]] = lon
 df[headers[2]] = ratio
 df[headers[3]] = size
 
+# Making the csv
 df.to_csv("beer_with_size_column.csv")
