@@ -27,9 +27,9 @@ def gridMaker(center_lat_lon: tuple[float,float], \
     step_x and step_y are the distance between the points in the grid.
     
     Args:
-        center (tuple of two float): A vertex of the grid/parallelogram (the bottom left one)
-        top_left (tuple of two float): A vertex of the grid/parallelogram (the top left one)
-        bottom_right (tuple of two float): A vertex of the grid/parallelogram (the bottom right one)
+        center_lat_lon (tuple of two float): A vertex of the grid/parallelogram (the bottom left one)
+        top_left_lat_lon (tuple of two float): A vertex of the grid/parallelogram (the top left one)
+        bottom_right_lat_lon (tuple of two float): A vertex of the grid/parallelogram (the bottom right one)
         x_step (float): Distance between points in the x axis of the grid/parallelogram (in meters). 
                         The x axis is the one defined by the center and the bottom_right points
         y_step (float): Distance between points in the y axis of the grid/parallelogram (in meters). 
